@@ -1,0 +1,64 @@
+#include <Pixy.h>
+#include <Servo.h>
+
+Pixy pixy;
+Servo panServo;
+Servo tiltServo;
+
+// define the pan and tilt angles
+int panAngle = 90;
+int tiltAngle = 90;
+
+// define the pan and tilt servo pins
+const int panPin = 9;
+const int tiltPin = 10;
+
+// define the maximum and minimum pan and tilt angles
+const int panMin = 0;
+const int panMax = 180;
+const int tiltMin = 0;
+const int tiltMax = 180;
+
+// define the proportional gain for pan and tilt control
+const float kp = 0.1;
+
+void setup() {
+  // initialize the serial communication
+  Serial.begin(9600);
+
+  // attach the servos to the designated pins
+  panServo.attach(panPin);
+  tiltServo.attach(tiltPin);
+
+  // set the initial pan and tilt angles
+  panServo.write(panAngle);
+  tiltServo.write(tiltAngle);
+}
+
+void loop() {
+  // get the number of objects detected by the Pixy camera
+  uint16_t n = pixy.getBlocks();
+
+  // if an object is detected
+  if (n > 0) {
+    // read the pan and tilt angles of the first object
+    int objPan = pixy.blocks[0].x;
+    int objTilt = pixy.blocks[0].y;
+
+    // calculate the error in the pan and tilt angles
+    int panError = objPan - panAngle;
+    int tiltError = objTilt - tiltAngle;
+
+    // update the pan and tilt angles using the proportional gain
+    panAngle += kp * panError;
+    tiltAngle += kp * tiltError;
+
+    // constrain the pan and tilt angles to the designated limits
+    panAngle = constrain(panAngle, panMin, panMax);
+    tiltAngle = constrain(tiltAngle, tiltMin, tiltMax);
+
+    // move the servos to the new pan and tilt angles
+    panServo.write(panAngle);
+    tiltServo.write(tiltAngle);
+  }
+}
