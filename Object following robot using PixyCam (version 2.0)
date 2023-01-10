@@ -1,0 +1,105 @@
+#include <Pixy.h>
+#include <Servo.h>
+
+Pixy pixy;
+Servo panServo;
+Servo tiltServo;
+Servo leftMotor;
+Servo rightMotor;
+
+// define the pan and tilt angles
+int panAngle = 90;
+int tiltAngle = 90;
+
+// define the pan and tilt servo pins
+const int panPin = 9;
+const int tiltPin = 10;
+const int leftMotorPin = 6;
+const int rightMotorPin = 7;
+
+// define the maximum and minimum pan and tilt angles
+const int panMin = 0;
+const int panMax = 180;
+const int tiltMin = 0;
+const int tiltMax = 180;
+
+// define the proportional gain for pan and tilt control
+const float kp = 0.1;
+
+//define the motor speed variables
+int leftSpeed = 0;
+int rightSpeed = 0;
+
+void setup() {
+  // initialize the serial communication
+  Serial.begin(9600);
+
+  // attach the servos to the designated pins
+  panServo.attach(panPin);
+  tiltServo.attach(tiltPin);
+  leftMotor.attach(leftMotorPin);
+  rightMotor.attach(rightMotorPin);
+
+  // set the initial pan and tilt angles
+  panServo.write(panAngle);
+  tiltServo.write(tiltAngle);
+}
+
+void loop() {
+  // get the number of objects detected by the Pixy camera
+  uint16_t n = pixy.getBlocks();
+
+  // if an object is detected
+  if (n > 0) {
+    // read the pan and tilt angles of the first object
+    int objPan = pixy.blocks[0].x;
+    int objTilt = pixy.blocks[0].y;
+
+    // calculate the error in the pan and tilt angles
+    int panError = objPan - panAngle;
+    int tiltError = objTilt - tiltAngle;
+
+    // update the pan and tilt angles using the proportional gain
+    panAngle += kp * panError;
+    tiltAngle += kp * tiltError;
+
+    // constrain the pan and tilt angles to the designated limits
+    panAngle = constrain(panAngle, panMin, panMax);
+    tiltAngle = constrain(tiltAngle, tiltMin, tiltMax);
+
+    // move the servos to the new pan and tilt angles
+    panServo.write(panAngle);
+    tiltServo.write(tiltAngle);
+
+    // read the x and y velocity of the object
+    int objVelX = pixy.blocks[0].velocityX;
+    int objVelY = pixy.blocks[0].velocityY;
+
+    // based on the object's x and y velocity, adjust the robot's movement
+    if (objVelX > 0) {
+      // object is moving to the right
+      leftSpeed = 150;
+      rightSpeed = 100;
+    } else if (objVelX < 0) {
+      // object is moving to the left
+      leftSpeed = 100;
+      rightSpeed = 150;
+    } else if (objVelY > 0) {
+      // object is moving up
+      leftSpeed = 100;
+      rightSpeed = 100;
+    } else if (objVelY < 0) {
+      // object is moving down
+      leftSpeed = 150;
+      rightSpeed = 150;
+    } else {
+      // object is not moving
+      leftSpeed = 120;
+      rightSpeed = 120;
+    }
+    //control the robot movement
+    leftMotor.write(leftSpeed);
+    rightMotor.write(rightSpeed);
+  }
+}
+
