@@ -26,7 +26,7 @@ Before you begin, ensure you have met the following requirements:
 ## Installation
 To set up the project, follow these steps:
 
-Clone this repository to your local machine: git clone https://github.com/your-username/Speed-Controlled-Object-Following-Robot.git
+Clone this repository to your local machine: git clone https://github.com/MahmudulHasan11085/Speed-Controlled-Object-Following-Robot-using-pixycam.git
 Open the Arduino sketch provided in the Arduino directory using the Arduino IDE. Configure the Arduino IDE with the appropriate board and port settings. Upload the sketch to your robot's microcontroller.
 
 ## Usage
